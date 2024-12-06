@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+<h1>My Bookings</h1>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Bus</th>
+            <th>Seats</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for booking in object_list %}
+        <tr>
+            <td>{{ booking.bus.name }}</td>
+            <td>{{ booking.seats }}</td>
+            <td>{{ booking.booking_date }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

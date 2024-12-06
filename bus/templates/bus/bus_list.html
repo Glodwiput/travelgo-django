@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Bus List{% endblock %}
+
+{% block content %}
+<h1>Available Buses</h1>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Departure</th>
+            <th>Destination</th>
+            <th>Time</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for bus in object_list %}
+        <tr>
+            <td>{{ bus.name }}</td>
+            <td>{{ bus.departure }}</td>
+            <td>{{ bus.destination }}</td>
+            <td>{{ bus.departure_time }}</td>
+            <td>{{ bus.price }}</td>
+            <td>
+                <a href="{% url 'bus_detail' bus.id %}" class="btn btn-info btn-sm">Details</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
