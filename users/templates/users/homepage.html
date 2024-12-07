@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}
+<style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .navbar {
+      background-color: #f8f9fa;
+    }
+    .navbar-brand, .nav-link {
+      color:black !important;
+    }
+    .hero-section {
+      height: 100vh;
+      background: linear-gradient(rgba(0, 0, 128, 0.6), rgba(0, 0, 128, 0.6)), url('https://source.unsplash.com/1600x900/?bus,travel') no-repeat center center/cover;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .btn-primary {
+      background-color: #007BFF;
+      border: none;
+    }
+    .btn-primary:hover {
+      background-color: #0056b3;
+    }
+    section {
+      min-height: 100vh;
+      padding: 50px 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .feature-icon {
+      font-size: 3rem;
+      color: #007BFF;
+    }
+    .bg-light {
+      background-color: #f8f9fa !important;
+    }
+    footer {
+      background-color: #003366;
+      color: white;
+      padding: 20px 0;
+      text-align: center;
+    }
+
+    #testimonialCarousel {
+        max-width: 700px;
+        margin: auto;
+    }
+    .card-body img {
+        object-fit: cover;
+    }
+    h6.text-primary {
+        font-size: 1rem;
+        font-weight: bold;
+    }
+    p.mb-2 {
+        font-style: italic;
+        color: #555;
+    }
+
+    .uniform-image {
+    height: 250px; /* Fixed height for all images */
+    object-fit: cover; /* Ensure aspect ratio is maintained */
+    }
+
+    .card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    }
+
+    .card-body {
+    flex-grow: 1;
+    }
+
+    .btn-block {
+    width: 100%;
+    }
+
+
+  </style>
+{% endblock %}
+{% block content %}
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">TravelGo</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+          <li class="nav-item"><a class="nav-link" href="#routes">Routes</a></li>
+          <li class="nav-item"><a class="nav-link" href="#testimonials">Testimonials</a></li>
+          <li class="nav-item"><a class="btn btn-outline-info btn-fw mx-3" href="{% url 'users:login' %}">Login</a></li>
+          <li class="nav-item"><a class="btn btn-gradient-info btn-fw" href="{% url 'users:register' %}">Register</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  <section class="hero-section">
+    <div class="container text-center">
+      <h1 class="display-4 fw-bold">Explore Indonesia with TravelGo</h1>
+      <p class="lead">The best intercity bus travel service in Indonesia</p>
+      <a href="#routes" class="btn btn-primary btn-lg mt-3">Book Your Ticket Now</a>
+    </div>
+  </section>
+  
+  <section id="features" class="bg-light text-center">
+    <div class="container">
+      <h2 class="mb-5">Why Choose TravelGo?</h2>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="feature-icon mb-3"><i class="bi bi-bus-front"></i></div>
+          <h5>Modern Fleet</h5>
+          <p>Enjoy state-of-the-art buses with the best amenities.</p>
+        </div>
+        <div class="col-md-4">
+          <div class="feature-icon mb-3"><i class="bi bi-shield-check"></i></div>
+          <h5>Safe and Reliable</h5>
+          <p>Experienced drivers and travel insurance included.</p>
+        </div>
+        <div class="col-md-4">
+          <div class="feature-icon mb-3"><i class="bi bi-calendar-check"></i></div>
+          <h5>Flexible Schedules</h5>
+          <p>Choose your departure time according to your needs.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <section id="routes" class="py-5 bg-light">
+    <div class="container">
+      <h2 class="mb-4 text-center text-primary">Popular Routes</h2>
+      <div class="row g-4">
+  
+        <div class="col-lg-4 col-md-6 col-sm-12">
+          <div class="card h-100 shadow-sm border-0 hover-shadow d-flex flex-column">
+            <img src="https://images.unsplash.com/photo-1603521801204-8d9c70dd08c8?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8YnVzJTIwaW5kb25lc2lhfGVufDB8fDB8fHww" class="card-img-top uniform-image" alt="Jakarta - Bandung">
+            <div class="card-body flex-grow-1 d-flex flex-column">
+              <h5 class="card-title text-primary">Jakarta - Bandung</h5>
+              <p class="card-text">Enjoy a comfortable journey from Jakarta to Bandung with our premium bus services.</p>
+              <div class="mt-auto">
+                <a href="#" class="btn btn-outline-info btn-block">View Details</a>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <div class="col-lg-4 col-md-6 col-sm-12">
+          <div class="card h-100 shadow-sm border-0 hover-shadow d-flex flex-column">
+            <img src="https://images.unsplash.com/photo-1608280240931-27cc6b4c9ade?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8YnVzJTIwaW5kb25lc2lhfGVufDB8fDB8fHww" class="card-img-top uniform-image" alt="Surabaya - Malang">
+            <div class="card-body flex-grow-1 d-flex flex-column">
+              <h5 class="card-title text-primary">Surabaya - Malang</h5>
+              <p class="card-text">Fast, safe, and comfortable travel between Surabaya and Malang.</p>
+              <div class="mt-auto">
+                <a href="#" class="btn btn-outline-info btn-block">View Details</a>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <div class="col-lg-4 col-md-6 col-sm-12">
+          <div class="card h-100 shadow-sm border-0 hover-shadow d-flex flex-column">
+            <img src="https://images.unsplash.com/photo-1605068263928-dc295689add1?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fGJ1cyUyMGluZG9uZXNpYXxlbnwwfHwwfHx8MA%3D%3D" class="card-img-top uniform-image" alt="Medan - Aceh">
+            <div class="card-body flex-grow-1 d-flex flex-column">
+              <h5 class="card-title text-primary">Medan - Aceh</h5>
+              <p class="card-text">Discover the rich heritage and stunning landscapes of North Sumatra and Aceh.</p>
+              <div class="mt-auto">
+                <a href="#" class="btn btn-outline-info btn-block">View Details</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  
+  
+  <!-- Testimonials Section -->
+  <section id="testimonials" class="bg-light py-5 text-center">
+    <div class="container">
+      <h2 class="mb-4">What Our Customers Say</h2>
+      <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500">
+        <div class="carousel-inner">
+          
+          <!-- Testimonial 1 -->
+          <div class="carousel-item active">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body text-center">
+                <img src="https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500" alt="Anna" class="rounded-circle mb-3" style="width: 80px; height: 80px;">
+                <p class="mb-2">"The service was fantastic! TravelGo made my trip so easy."</p>
+                <h6 class="text-primary mb-0">Anna, Jakarta</h6>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Testimonial 2 -->
+          <div class="carousel-item">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body text-center">
+                <img src="data:image/jpeg;base64,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" alt="Michael" class="rounded-circle mb-3" style="width: 80px; height: 80px;">
+                <p class="mb-2">"Comfortable buses and friendly staff. Highly recommended!"</p>
+                <h6 class="text-primary mb-0">Michael, Surabaya</h6>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Testimonial 3 -->
+          <div class="carousel-item">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body text-center">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTssi6kGiFhmolSHHRe4Mchy6rEQElsgXK0mw&s" alt="Lina" class="rounded-circle mb-3" style="width: 80px; height: 80px;">
+                <p class="mb-2">"TravelGo is my go-to for traveling across provinces. Excellent!"</p>
+                <h6 class="text-primary mb-0">Lina, Medan</h6>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+        <!-- Carousel Controls -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    </div>
+  </section>
+  
+  
+{% endblock %}
