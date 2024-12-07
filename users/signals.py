@@ -4,14 +4,15 @@ from .models import User, Profile
 
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
-    if created:
+    if created and not instance.skip_signals:
         Profile.objects.create(user=instance)
 
 @receiver(post_save, sender=User)
 def save_profile(sender, instance, **kwargs):
-    profile, created = Profile.objects.get_or_create(user=instance)
-    if created:
-        profile.phone = instance.profile.phone  # Data dari register_view
-        profile.address = instance.profile.address
-        profile.save()
+    if not instance.skip_signals:
+        profile, created = Profile.objects.get_or_create(user=instance)
+        if created:
+            profile.phone = instance.profile.phone  # Data dari register_view
+            profile.address = instance.profile.address
+            profile.save()
 

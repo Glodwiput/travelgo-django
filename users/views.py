@@ -3,15 +3,18 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm, EditProfileForm, EditUserForm
-from .models import Profile
+from .models import Profile, User
 
 from django.views import View
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import render, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .forms import RegisterForm, EditProfileForm, EditUserForm
+from .forms import RegisterForm, EditProfileForm, EditUserForm, UserAddForm
 from .models import Profile
+from django.views.generic import ListView
+from django.shortcuts import get_object_or_404
+
 
 
 def home_view(request):
@@ -31,6 +34,7 @@ class RegisterView(View):
         if form.is_valid():
             user = form.save(commit=False)
             user.role = 'customer'
+            user.skip_signals = False
             user.save()
             # Buat profile dengan data tambahan
             Profile.objects.filter(user=user).update(
@@ -97,6 +101,61 @@ class EditProfileView(LoginRequiredMixin, View):
             return redirect('users:profile')
         messages.error(request, "There was an error updating your profile.")
         return render(request, self.template_name, {'user_form': user_form, 'profile_form': profile_form})
+
+
+class UserListView(ListView):
+    model = User
+    template_name = 'users/admin/user_list.html'
+    def get(self, request, *args, **kwargs):
+        users = self.model.objects.all()
+        return render(request, self.template_name, {
+            'users': users,
+            })
+
+
+class UserAddView(View):
+    template_name = 'users/admin/user_add.html'
+    form_class = UserAddForm
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            # Buat user terlebih dahulu
+            user = form.save(commit=False)
+            user.skip_signals = True
+            user.save()
+            
+            # Buat profil terkait secara manual
+            Profile.objects.create(
+                user=user,
+                phone=form.cleaned_data.get('phone', ''),
+                address=form.cleaned_data.get('address', '')
+            )
+            
+            messages.success(request, "User added successfully!")
+            return redirect('users:login')
+        
+        messages.error(request, "There was an error in the add user process.")
+        return render(request, self.template_name, {'form': form})
+
+
+
+class UserDeleteView(View):
+    template_name = 'users/admin/user_list.html'
+    model = User
+    def get(self, request, *args, **kwargs):
+        users = self.model.objects.all()
+        return render(request, self.template_name, {'users': users})
+
+    def post(self, request, pk, *args, **kwargs):
+        user = get_object_or_404(User, pk=pk)
+        user.delete()
+        messages.success(request, "User deleted successfully!")
+        return redirect('users:user_list')
 
 
 
