@@ -8,7 +8,6 @@ from .models import Profile
 from django.views import View
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import render, redirect
-from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from .forms import RegisterForm, EditProfileForm, EditUserForm

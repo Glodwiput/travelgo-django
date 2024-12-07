@@ -28,8 +28,8 @@
                 </a>
                 <div class="dropdown-menu navbar-dropdown" aria-labelledby="profileDropdown">
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="{% url 'logout' %}">
-                        <i class="mdi mdi-logout me-2 text-primary" action="{% url 'login' %}"></i> Signout </a>
+                    <a class="dropdown-item" href="{% url 'users:logout' %}">
+                        <i class="mdi mdi-logout me-2 text-primary" action="{% url 'users:login' %}"></i> Signout </a>
                 </div>
             </li>
             <li class="nav-item d-none d-lg-block full-screen-link">

@@ -3,10 +3,9 @@
 {% block title %}Create Booking{% endblock %}
 
 {% block content %}
-<h1>Book a Seat</h1>
-<form method="post">
+<form method="POST">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Book Now</button>
-</form>
+    <button type="submit">Pesan Sekarang</button>
+  </form>
 {% endblock %}

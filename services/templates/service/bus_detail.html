@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Bus Detail{% endblock %}
+
+{% block content %}
+<h1>{{ object.name }}</h1>
+<p><strong>Departure:</strong> {{ object.departure }}</p>
+<p><strong>Destination:</strong> {{ object.destination }}</p>
+<p><strong>Time:</strong> {{ object.departure_time }}</p>
+<p><strong>Price:</strong> {{ object.price }}</p>
+<a href="{% url 'create_booking' object.id %}" class="btn btn-primary">Book Now</a>
+{% endblock %}

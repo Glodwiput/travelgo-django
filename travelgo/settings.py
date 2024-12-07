@@ -44,8 +44,8 @@ INSTALLED_APPS = [
     'users',
     'bookings',
     'bus',
-    'payments',
     'reviews',
+    'services',
 ]
 
 MIDDLEWARE = [
@@ -71,6 +71,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'users.context_processors.is_admin',
+                'users.context_processors.is_staff',
+                'users.context_processors.is_customer',
             ],
         },
     },

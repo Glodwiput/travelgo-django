@@ -1,0 +1,37 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title">Add burger</h4>
+        <form class="forms-sample" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <!-- <div class="form-group">
+                <label for="exampleInputName1">Nama</label>
+                <input type="text" class="form-control" name="nama" id="exampleInputName1"
+                    placeholder="Masukkan Nama burger">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputEmail3">Deskripsi</label>
+                <input type="text" class="form-control" name="deskripsi" id="exampleInputEmail3"
+                    placeholder="Masukkan Deskripsi burger">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword4">Harga</label>
+                <input type="number" class="form-control" name="harga" id="exampleInputPassword4"
+                    placeholder="Masukkan Harga burger">
+            </div> -->
+
+            <button type="submit" class="btn btn-gradient-primary me-2">Submit</button>
+            <a class="btn btn-light" href="{% url 'bus:bus_list' %}" onclick="return confirmCancel()">Cancel</a>
+        </form>
+    </div>
+</div>
+</div>
+<script>
+    function confirmCancel() {
+        return confirm("Are you sure you want to cancel? Your changes will be lost! Take a moment to review your updates.");
+    }
+</script>
+{% endblock %}

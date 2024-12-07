@@ -1,7 +1,12 @@
 from django.urls import path
 from . import views
 
+app_name = 'bus'
+
 urlpatterns = [
-    path('', views.BusListView.as_view(), name='bus_list'),  # Daftar Bus
-    path('<int:pk>/', views.BusDetailView.as_view(), name='bus_detail'),  # Detail Bus
+    path('', views.BusListView.as_view(), name='bus_list'),  
+    path('add/', views.AddBusView.as_view(), name='bus_add'),  
+    path('delete/<int:pk>/', views.DeleteBusView.as_view(), name='bus_delete'),  
+    path('update/<int:pk>/', views.UpdateBusView.as_view(), name='bus_update'),  
+    path('<int:pk>/', views.AddBusView.as_view(), name='bus_detail'),  
 ]
