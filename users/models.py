@@ -9,6 +9,7 @@ class User(AbstractUser):
     ]
     role = models.CharField(max_length=10, choices=ROLES, default='customer')
 
+    skip_signals = models.BooleanField(default=False)
     def __str__(self):
         return f"{self.username} ({self.role})"
 

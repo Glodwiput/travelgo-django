@@ -9,6 +9,8 @@ def create_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_profile(sender, instance, **kwargs):
+    if getattr(instance, 'skip_signals', False):
+        return
     if not instance.skip_signals:
         profile, created = Profile.objects.get_or_create(user=instance)
         if created:
