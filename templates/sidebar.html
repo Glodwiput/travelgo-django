@@ -33,12 +33,14 @@
                 <i class="mdi mdi-home menu-icon"></i>
             </a>
         </li>
+        {% if is_admin %}
         <li class="nav-item">
             <a class="nav-link" href="{% url 'users:user_list' %}">
                 <span class="menu-title">Users</span>
                 <i class="mdi mdi-home menu-icon"></i>
             </a>
         </li>
+        {% endif %}
         {% endif %}
     </ul>
 </nav>

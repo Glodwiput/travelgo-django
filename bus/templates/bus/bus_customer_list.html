@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% block head %}
+
+{% endblock %}
+{% block content %}
+{% include 'navbar_customer.html' %}
+
+
+<section class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="fs-4 fs-md-3 fw-medium">Our Buses</h1>
+    </div>
+  
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-success">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <form method="get" class="mb-4 d-flex gap-2">
+      <input type="text" name="search" class="form-control" placeholder="Search bus..." value="{{ search|default:'' }}">
+      <select name="departure" class="form-select">
+          <option value="">All Departures</option>
+          {% for city in departure %}
+          <option value="{{ city }}" {% if departure == city %}selected{% endif %}>{{ city }}</option>
+          {% endfor %}
+      </select>
+      <select name="destination" class="form-select">
+          <option value="">All Destinations</option>
+          {% for city in destination %}
+          <option value="{{ city }}" {% if departure == city %}selected{% endif %}>{{ city }}</option>
+          {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-primary">Filter</button>
+  </form>
+    <div class="d-flex flex-wrap">
+          
+        
+        {% for bus in buses %}
+        <div class="card-container">
+            <div class="card border-light shadow-sm h-100 bus-card">
+              <img
+                src="{{ bus.image }}"
+                class="card-img-top rounded-top"
+                alt="Bus Image"
+              />
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title text-truncate mb-2">{{ bus.name }}</h5>
+                <div class="rating-section d-flex align-items-center mb-2">
+                  {% with bus.average_rating as avg_rating %}
+                    {% for i in "12345"|make_list %}
+                      {% if i|add:0 <= avg_rating %}
+                        <i class="bi bi-star-fill text-warning"></i>
+                      {% else %}
+                        <i class="bi bi-star text-muted"></i>
+                      {% endif %}
+                    {% endfor %}
+                  {% endwith %}
+                  <span class="ms-2 text-muted small">({{ bus.average_rating|default:"0.0"  }})</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-muted small">{{ bus.seat }} Seat</span>
+                  <span class="text-muted small">Rp.{{ bus.price|intcomma }}</span>
+                </div>
+                <p class="mb-1 ">{{ bus.departure }} - {{ bus.destination }}</p>
+                <p class="text-truncate small mb-1 location">{{ bus.departure_time }}</p>
+                <a href="{% url 'bus:bus_detail_customer' bus.pk %}"  class="btn btn-danger text-white w-100 mt-auto btn-hover">Read more <i class="bi bi-arrow-right"></i></a>
+              </div>
+            </div>
+          </div>
+          
+      {% endfor %}
+    </div>
+    <!-- Pagination Controls -->
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <!-- Info -->
+        <div>
+            Results: {{ buses.start_index }} - {{ buses.end_index }} of {{ total_items }}
+        </div>
+
+        <!-- Pagination Buttons -->
+        <nav aria-label="Page navigation" class="mt-3">
+            <ul class="pagination justify-content-center">
+                {% if buses.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?per_page={{ per_page }}&page={{ buses.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in buses.paginator.page_range %}
+                {% if buses.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > buses.number|add:'-3' and num < buses.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?per_page={{ per_page }}&page={{ num }}">{{ num }}</a>
+                </li>
+                {% elif num == 1 or num == buses.paginator.num_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="?per_page={{ per_page }}&page={{ num }}">{{ num }}</a>
+                </li>
+                {% elif num == buses.number|add:'-3' or num == buses.number|add:'3' %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+                {% endfor %}
+
+                {% if buses.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?per_page={{ per_page }}&page={{ buses.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+
+        <!-- Items Per Page -->
+        <form method="get" class="d-inline-block">
+            <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()" style="width: auto; display: inline-block;">
+                <option value="12" {% if per_page == 12 %}selected{% endif %}>12</option>
+                <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+            </select>
+        </form>
+    </div>
+  </section>
+  
+
+
+
+{% endblock %}

@@ -3,10 +3,32 @@
 {% block title %}Add Review{% endblock %}
 
 {% block content %}
-<h1>Add Review</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Submit Review</button>
-</form>
+{% include 'navbar_customer.html' %}
+<div class="container mx-auto py-8 px-6 max-w-lg">
+    <h1 class="text-2xl font-bold mb-4">Add Your Review for {{ booking.bus.name }}</h1>
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        <!-- Input Rating -->
+        <div>
+            <label for="rating" class="block text-sm font-medium text-gray-700">Rating (1-5)</label>
+            <input type="number" name="rating" id="rating" min="1" max="5"
+                   class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                   required>
+        </div>
+
+        <!-- Input Komentar -->
+        <div>
+            <label for="comment" class="block text-sm font-medium text-gray-700">Comment</label>
+            <textarea name="comment" id="comment" rows="4"
+                      class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                      placeholder="Write your thoughts here..." required></textarea>
+        </div>
+
+        <!-- Tombol Kirim Review -->
+        <button type="submit"
+                class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            Submit Review
+        </button>
+    </form>
+</div>
 {% endblock %}

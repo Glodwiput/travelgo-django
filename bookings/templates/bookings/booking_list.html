@@ -1,23 +1,56 @@
 {% extends 'base.html' %}
-
 {% block title %}My Bookings{% endblock %}
 
 {% block content %}
+{% include 'navbar_customer.html' %}
 <h1>My Bookings</h1>
 <table class="table table-bordered">
     <thead>
         <tr>
             <th>Bus</th>
             <th>Seats</th>
+            <th>Price</th>
             <th>Date</th>
+            <th>Services</th>
+            <th>review</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
-        {% for booking in object_list %}
+        {% for booking in bookings %}
         <tr>
             <td>{{ booking.bus.name }}</td>
             <td>{{ booking.seats }}</td>
+            <td>{{ booking.price_total}}</td>
             <td>{{ booking.booking_date }}</td>
+            <td>
+                {% if booking.services.exists %}
+                    <ul>
+                        {% for service in booking.services.all %}
+                        <li>{{ service.name }} ({{ service.price }})</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    No services
+                {% endif %}
+            </td>
+            <td>
+                <!-- Tombol Review yang mengarah ke halaman review -->
+                {% if booking.reviews.exists %}
+                    <span class="text-green-500">Reviewed</span>
+                {% else %}
+                    <a href="{% url 'reviews:review_add' booking.pk %}" 
+                    class="btn bg-blue-500 text-black px-3 py-1 rounded hover:bg-blue-600">Give Review</a>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'bookings:update_booking' booking.pk %}" 
+                   class="btn bg-yellow-500 text-black px-3 py-1 rounded hover:bg-yellow-600">Edit</a>
+                <form method="POST" action="{% url 'bookings:delete_booking' booking.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn bg-red-500 text-black px-3 py-1 rounded hover:bg-red-600">Delete</button>
+                </form>
+            </td>
         </tr>
         {% endfor %}
     </tbody>

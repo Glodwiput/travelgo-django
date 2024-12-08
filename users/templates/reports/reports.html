@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<h1>Reports</h1>
+
+<!-- Filter Section -->
+<form method="get" class="mb-4">
+    <label for="bus">Bus:</label>
+    <select name="bus" id="bus">
+        <option value="">All</option>
+        {% for bus in buses %}
+        <option value="{{ bus.id }}" {% if request.GET.bus == bus.id|stringformat:"s" %}selected{% endif %}>{{ bus.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="start_date">Start Date:</label>
+    <input type="date" name="start_date" id="start_date" value="{{ request.GET.start_date }}">
+
+    <label for="end_date">End Date:</label>
+    <input type="date" name="end_date" id="end_date" value="{{ request.GET.end_date }}">
+
+    <label for="min_price">Min Price:</label>
+    <input type="number" name="min_price" id="min_price" value="{{ request.GET.min_price }}">
+
+    <label for="max_price">Max Price:</label>
+    <input type="number" name="max_price" id="max_price" value="{{ request.GET.max_price }}">
+
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Bus</th>
+            <th>Seats</th>
+            <th>Price</th>
+            <th>Date</th>
+            <th>Services</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for booking in bookings %}
+        <tr>
+            <td>{{ booking.bus.name }}</td>
+            <td>{{ booking.seats }}</td>
+            <td>{{ booking.price_total }}</td>
+            <td>{{ booking.booking_date }}</td>
+            <td>
+                {% if booking.services.exists %}
+                <ul>
+                    {% for service in booking.services.all %}
+                    <li>{{ service.name }} ({{ service.price }})</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                No services
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Summary Section -->
+<div>
+    <h3>Summary</h3>
+    <p>Total Revenue: {{ total_revenue }}</p>
+    <p>Total Bookings: {{ total_bookings }}</p>
+    {% if most_popular_bus %}
+    <p>Most Popular Bus: {{ most_popular_bus.name }} ({{ most_popular_bus.booking_count }} bookings)</p>
+    {% endif %}
+</div>
+
+<hr>
+
+<!-- User Report Section -->
+<div>
+    <h3>User Report</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Total Bookings</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in user_report %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.total_bookings }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<hr>
+
+<!-- Review Report Section -->
+<div>
+    <h3>Review Report</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Total Reviews</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for review in review_report %}
+            <tr>
+                <td>{{ review.user__username }}</td>
+                <td>{{ review.total_reviews }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

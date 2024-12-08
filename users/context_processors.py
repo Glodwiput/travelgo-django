@@ -1,6 +1,14 @@
 def is_admin(request):
-    return{'is_admin':request.user.groups.filter(name='admim').exists()}
+    if request.user.is_authenticated:
+        return {'is_admin': request.user.groups.filter(name='admin').exists()}
+    return {'is_admin': False}
+
 def is_staff(request):
-    return{'is_staff':request.user.groups.filter(name='staff').exists()}
+    if request.user.is_authenticated:
+        return {'is_staff': request.user.groups.filter(name='staff').exists()}
+    return {'is_staff': False}
+
 def is_customer(request):
-    return{'is_customer':request.user.groups.filter(name='customer').exists()}
+    if request.user.is_authenticated:
+        return {'is_customer': request.user.groups.filter(name='customer').exists()}
+    return {'is_customer': False}

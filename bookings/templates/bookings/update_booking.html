@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Update Booking{% endblock %}
+
+{% block content %}
+<h1>Update Booking</h1>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Update</button>
+</form>
+{% if error %}
+<p class="text-danger">{{ error }}</p>
+{% endif %}
+<a href="{% url 'bookings:booking_list' %}" class="btn btn-secondary">Back</a>
+{% endblock %}

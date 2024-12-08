@@ -1,19 +1,20 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import RegisterForm, EditProfileForm, EditUserForm
 from .models import Profile, User
-
 from django.views import View
 from django.contrib.auth.views import LoginView, LogoutView
-from django.shortcuts import render, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from .forms import RegisterForm, EditProfileForm, EditUserForm, UserAddForm
-from .models import Profile
 from django.views.generic import ListView
-from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import Group
+from django.db.models import Sum, Count
+from bookings.models import Booking
+from bus.models import Bus
+from services.models import Service
+from reviews.models import Review
 
 
 
@@ -35,8 +36,11 @@ class RegisterView(View):
             user = form.save(commit=False)
             user.role = 'customer'
             user.skip_signals = False
+            
+            group, _ = Group.objects.get_or_create(name=role)
+            user.groups.add(group)
             user.save()
-            # Buat profile dengan data tambahan
+           
             Profile.objects.filter(user=user).update(
                 phone=form.cleaned_data.get('phone', ''),
                 address=form.cleaned_data.get('address', '')
@@ -60,6 +64,15 @@ class CustomLoginView(LoginView):
         return super().form_invalid(form)
 
     def get_success_url(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return reverse_lazy('users:login')
+
+        if user.is_superuser or user.groups.filter(name='staff').exists():
+            return reverse_lazy('bus:bus_list')
+        elif user.groups.filter(name='customer').exists():
+            return reverse_lazy('users:profile')
+
         return reverse_lazy('users:profile')
 
 
@@ -77,9 +90,11 @@ class ProfileView(LoginRequiredMixin, View):
         try:
             profile = request.user.profile
         except Profile.DoesNotExist:
-            # Buat profile jika tidak ada
+            
             profile = Profile.objects.create(user=request.user)
         return render(request, self.template_name, {'user': request.user, 'profile': profile})
+
+
 
 class EditProfileView(LoginRequiredMixin, View):
     template_name = 'users/edit_profile.html'
@@ -103,6 +118,7 @@ class EditProfileView(LoginRequiredMixin, View):
         return render(request, self.template_name, {'user_form': user_form, 'profile_form': profile_form})
 
 
+
 class UserListView(ListView):
     model = User
     template_name = 'users/admin/user_list.html'
@@ -124,12 +140,22 @@ class UserAddView(View):
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
         if form.is_valid():
-            # Buat user terlebih dahulu
+            role = form.cleaned_data.get('role')
+            
             user = form.save(commit=False)
             user.skip_signals = True
-            user.save()
             
-            # Buat profil terkait secara manual
+            if role == 'admin':
+                user.is_superuser = True
+                user.is_staff = True
+            elif role == 'staff':
+                user.is_staff = True
+
+            user.save()
+            group, _ = Group.objects.get_or_create(name=role)
+            user.groups.add(group)
+            
+            
             Profile.objects.create(
                 user=user,
                 phone=form.cleaned_data.get('phone', ''),
@@ -141,7 +167,6 @@ class UserAddView(View):
         
         messages.error(request, "There was an error in the add user process.")
         return render(request, self.template_name, {'form': form})
-
 
 
 class UserDeleteView(View):
@@ -162,71 +187,52 @@ class UserDeleteView(View):
 
 
 
-# # Register View
-# def register_view(request):
-#     if request.method == 'POST':
-#         form = RegisterForm(request.POST)
-#         if form.is_valid():
-#             user = form.save(commit=False)
-#             user.role = 'customer' 
-#             user.save()
-#             Profile.objects.filter(user=user).update(
-#                 phone=form.cleaned_data.get('phone', ''),
-#                 address=form.cleaned_data.get('address', '')
-#             )
-#             login(request, user)
-#             messages.success(request, "Registration successful! Please log in.")
-#             return redirect('users:login')
-#         else:
-#             messages.error(request, "There was an error in the registration process.")
-#     else:
-#         form = RegisterForm()
-#     return render(request, 'users/register.html', {'form': form})
+def reports_view(request):
+    # Filter Options
+    bus_id = request.GET.get('bus')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
 
-# # Login View
-# def login_view(request):
-#     if request.method == 'POST':
-#         username = request.POST['username']
-#         password = request.POST['password']
-#         user = authenticate(request, username=username, password=password)
-#         if user is not None:
-#             login(request, user)
-#             messages.success(request, "Login successful!")
-#             return redirect('users:profile')
-#         else:
-#             messages.error(request, "Invalid username or password.")
-#     return render(request, 'users/login.html')
+    # Base QuerySet
+    bookings = Booking.objects.all()
+    
+    # Apply Filter by Bus
+    if bus_id:
+        bookings = bookings.filter(bus_id=bus_id)
 
-# # Logout View
-# @login_required
-# def logout_view(request):
-#     logout(request)
-#     messages.success(request, "You have been logged out.")
-#     return redirect('users:login')
+    # Filter by Date Range
+    if start_date and end_date:
+        bookings = bookings.filter(booking_date__range=[start_date, end_date])
 
-# # Profile View
-# @login_required
-# def profile_view(request):
-#     try:
-#         profile = request.user.profile 
-#     except Profile.DoesNotExist:# Buat profile jika tidak ada
-#         profile = Profile.objects.create(user=request.user)
-#     return render(request, 'users/profile.html', {'user': request.user, 'profile': profile})
+    # Filter by Price Range
+    if min_price:
+        bookings = bookings.filter(price_total__gte=min_price)
+    if max_price:
+        bookings = bookings.filter(price_total__lte=max_price)
 
-# # Edit Profile View
-# @login_required
-# def edit_profile_view(request):
-#     if request.method == 'POST':
-#         user_form = EditUserForm(request.POST, instance=request.user)
-#         profile_form = EditProfileForm(request.POST, instance=request.user.profile)
-#         if user_form.is_valid() and profile_form.is_valid():
-#             user_form.save()
-#             profile_form.save()
-#             messages.success(request, "Profile updated successfully.")
-#             return redirect('users:profile')
-#         else:
-#             messages.error(request, "There was an error updating your profile.")
-#     else:
-#         user_form = EditUserForm(instance=request.user)
-#         profile_form = EditProfileForm(instance=request.user.profile)
-#     return render(request, 'users/edit_profile.html', {'user_form': user_form, 'profile_form': profile_form})
+    # Total Revenue & Other Summary
+    total_revenue = bookings.aggregate(Sum('price_total'))['price_total__sum'] or 0
+    total_bookings = bookings.count()
+    most_popular_bus = Bus.objects.annotate(booking_count=Count('booking')).order_by('-booking_count').first()
+
+    # User Report Logic
+    user_counts = User.objects.annotate(total_bookings=Count('booking')).order_by('-total_bookings')[:10]  # Top 10 users by number of bookings
+
+    # Review Report Logic
+    review_counts = Review.objects.values('user__username').annotate(total_reviews=Count('id')).order_by('-total_reviews')[:10]  # Top 10 users by number of reviews
+
+    # Context for rendering the view
+    context = {
+        'bookings': bookings,
+        'buses': Bus.objects.all(),
+        'total_revenue': total_revenue,
+        'total_bookings': total_bookings,
+        'most_popular_bus': most_popular_bus,
+        'user_report': user_counts,
+        'review_report': review_counts,
+    }
+    return render(request, 'reports/reports.html', context)
+
+

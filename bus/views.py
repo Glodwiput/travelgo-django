@@ -8,6 +8,10 @@ from django.contrib import messages
 from django.views import View
 from .forms import BusForm
 from .models import Bus
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from bookings.forms import BookingForm
+from django.db.models import Avg, Count
+
 
 class BusListView(ListView):
     model = Bus
@@ -73,3 +77,66 @@ class DeleteBusView(View):
 
 
 
+# customer
+from django.db.models import Q
+
+class BusListCustomerView(ListView):
+    model = Bus
+    template_name = 'bus/bus_customer_list.html'
+    context_object_name = 'buses'
+
+    def get(self, request, *args, **kwargs):
+        query = self.request.GET.get('search', '').strip()
+        departure = self.request.GET.get('departure', '').strip()
+        destination = self.request.GET.get('destination', '').strip()
+        per_page = request.GET.get('per_page', 12)
+
+        try:
+            per_page = int(per_page)
+        except ValueError:
+            per_page = 12
+
+        buses = Bus.objects.all().annotate(
+            average_rating=Avg('review__rating'),
+            rating_count=Count('review')
+        )
+
+        if query:
+            buses = buses.filter(name__icontains=query)
+        if departure:
+            buses = buses.filter(departure__icontains=departure)
+        if destination:
+            buses = buses.filter(destination__icontains=destination)
+
+        paginator = Paginator(buses, per_page)
+        page_number = self.request.GET.get('page')
+        try:
+            bus_page = paginator.page(page_number)
+        except PageNotAnInteger:
+            bus_page = paginator.page(1)
+        except EmptyPage:
+            bus_page = paginator.page(paginator.num_pages)
+
+        unique_departures = Bus.objects.values_list('departure', flat=True).distinct()
+        unique_destinations = Bus.objects.values_list('destination', flat=True).distinct()
+
+        context = {
+            'buses': bus_page,
+            'per_page': per_page,
+            'total_items': paginator.count,
+            'search': query,
+            'departure': unique_departures,
+            'destination': unique_destinations,
+        }
+
+        return render(request, self.template_name, context)
+
+class BusDetailCustomerView(DetailView):
+    model = Bus
+    template_name = 'bus/bus_customer_detail.html'
+    context_object_name = 'bus'
+
+    def get(self, request, pk,  *args, **kwargs):
+        form = BookingForm()
+        bus = get_object_or_404(Bus, pk=pk)
+        return render(request, self.template_name, {'form': form, 'bus': bus})
