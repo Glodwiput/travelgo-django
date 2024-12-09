@@ -11,6 +11,7 @@ from .forms import RegisterForm, EditProfileForm, EditUserForm, UserAddForm
 from django.views.generic import ListView
 from django.contrib.auth.models import Group
 from django.db.models import Sum, Count
+from django.core.paginator import Paginator
 from bookings.models import Booking
 from bus.models import Bus
 from services.models import Service
@@ -45,10 +46,11 @@ class RegisterView(NotLoggedInRequiredMixin,View):
             user = form.save(commit=False)
             user.role = 'customer'
             user.skip_signals = False
-            
-            group, _ = Group.objects.get_or_create(name=role)
-            user.groups.add(group)
             user.save()
+            
+            # role = 'customer'
+            group, _ = Group.objects.get_or_create(name=user.role)
+            user.groups.add(group)
            
             Profile.objects.filter(user=user).update(
                 phone=form.cleaned_data.get('phone', ''),
@@ -91,39 +93,6 @@ class CustomLogoutView(LogoutView):
     def dispatch(self, request, *args, **kwargs):
         messages.success(request, "You have been logged out.")
         return super().dispatch(request, *args, **kwargs)
-
-class ProfileView(CustomLoginRequiredMixin, View):
-    template_name = 'users/profile.html'
-
-    def get(self, request, *args, **kwargs):
-        try:
-            profile = request.user.profile
-        except Profile.DoesNotExist:
-            
-            profile = Profile.objects.create(user=request.user)
-        return render(request, self.template_name, {'user': request.user, 'profile': profile})
-
-
-class EditProfileView(CustomLoginRequiredMixin, View):
-    template_name = 'users/edit_profile.html'
-    user_form_class = EditUserForm
-    profile_form_class = EditProfileForm
-
-    def get(self, request, *args, **kwargs):
-        user_form = self.user_form_class(instance=request.user)
-        profile_form = self.profile_form_class(instance=request.user.profile)
-        return render(request, self.template_name, {'user_form': user_form, 'profile_form': profile_form})
-
-    def post(self, request, *args, **kwargs):
-        user_form = self.user_form_class(request.POST, instance=request.user)
-        profile_form = self.profile_form_class(request.POST, instance=request.user.profile)
-        if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
-            messages.success(request, "Profile updated successfully.")
-            return redirect('users:profile')
-        messages.error(request, "There was an error updating your profile.")
-        return render(request, self.template_name, {'user_form': user_form, 'profile_form': profile_form})
 
 
 class UserListView(RoleRequiredMixin,ListView):
@@ -199,42 +168,64 @@ class UserDeleteView(RoleRequiredMixin,View):
 @login_required
 @role_required(['admin','staff'])
 def reports_view(request):
-    
+    # Get filter parameters from the request
     bus_id = request.GET.get('bus')
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
 
-    
+    # Get all bookings and filter them based on the parameters
     bookings = Booking.objects.all()
-    
-    
+
     if bus_id:
         bookings = bookings.filter(bus_id=bus_id)
-
-   
     if start_date and end_date:
         bookings = bookings.filter(booking_date__range=[start_date, end_date])
-
-    
     if min_price:
         bookings = bookings.filter(price_total__gte=min_price)
     if max_price:
         bookings = bookings.filter(price_total__lte=max_price)
 
-    
+
+    # Paginate bookings
+    items_per_page = int(request.GET.get('items_per_page', 5))
+    paginator = Paginator(bookings, items_per_page)  
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Calculate summary metrics
     total_revenue = bookings.aggregate(Sum('price_total'))['price_total__sum'] or 0
     total_bookings = bookings.count()
-    most_popular_bus = Bus.objects.annotate(booking_count=Count('booking')).order_by('-booking_count').first()
+    most_popular_bus = (
+        Bus.objects.annotate(booking_count=Count('booking'))
+        .order_by('-booking_count')
+        .first()
+    )
 
-   
-    user_counts = User.objects.annotate(total_bookings=Count('booking')).order_by('-total_bookings')[:10]  # Top 10 users by number of bookings
+    # User and review reports
+    user_counts = User.objects.annotate(total_bookings=Count('booking')).order_by('-total_bookings')[:10]
+    review_counts = Review.objects.values('user__username').annotate(total_reviews=Count('id')).order_by('-total_reviews')[:10]
 
-    
-    review_counts = Review.objects.values('user__username').annotate(total_reviews=Count('id')).order_by('-total_reviews')[:10]  # Top 10 users by number of reviews
+    # Chart data: Revenue by Bus
+    revenue_by_bus = (
+        bookings.values('bus__name')
+        .annotate(total_revenue=Sum('price_total'))
+        .order_by('-total_revenue')
+    )
+    bus_labels = [entry['bus__name'] for entry in revenue_by_bus]
+    bus_revenue_data = [float(entry['total_revenue']) for entry in revenue_by_bus]
 
-   
+    # Chart data: Bookings by Date
+    bookings_by_date = (
+        bookings.values('booking_date')
+        .annotate(count=Count('id'))
+        .order_by('booking_date')
+    )
+    date_labels = [entry['booking_date'].strftime('%Y-%m-%d') for entry in bookings_by_date]
+    booking_data = [float(entry['count']) for entry in bookings_by_date]
+    print(bus_labels)
+    print(bus_revenue_data)
     context = {
         'bookings': bookings,
         'buses': Bus.objects.all(),
@@ -243,7 +234,12 @@ def reports_view(request):
         'most_popular_bus': most_popular_bus,
         'user_report': user_counts,
         'review_report': review_counts,
+        'bus_labels': bus_labels,
+        'bus_revenue_data': bus_revenue_data,
+        'date_labels': date_labels,
+        'booking_data': booking_data,
+        'page_obj': page_obj,
     }
-    return render(request, 'reports/reports.html', context)
 
+    return render(request, 'reports/reports.html', context)
 

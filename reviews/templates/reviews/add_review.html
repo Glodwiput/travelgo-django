@@ -4,31 +4,50 @@
 
 {% block content %}
 {% include 'navbar_customer.html' %}
-<div class="container mx-auto py-8 px-6 max-w-lg">
-    <h1 class="text-2xl font-bold mb-4">Add Your Review for {{ booking.bus.name }}</h1>
-    <form method="POST" class="space-y-4">
-        {% csrf_token %}
-        <!-- Input Rating -->
-        <div>
-            <label for="rating" class="block text-sm font-medium text-gray-700">Rating (1-5)</label>
-            <input type="number" name="rating" id="rating" min="1" max="5"
-                   class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                   required>
-        </div>
 
-        <!-- Input Komentar -->
-        <div>
-            <label for="comment" class="block text-sm font-medium text-gray-700">Comment</label>
-            <textarea name="comment" id="comment" rows="4"
-                      class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                      placeholder="Write your thoughts here..." required></textarea>
-        </div>
+<div class="container my-5 pt-5 "  style="height: 90vh;">
+    <!-- Breadcrumb -->
+    <nav class="mb-4">
+        <a href="{% url 'users:homepage' %}" class="text-decoration-none text-secondary">Home</a> /
+        <a href="{% url 'bookings:booking_list' %}" class="text-decoration-none text-secondary">My Bookings</a> /
+        <span class="text-dark">Add Review</span>
+    </nav>
 
-        <!-- Tombol Kirim Review -->
-        <button type="submit"
-                class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            Submit Review
-        </button>
-    </form>
+    <!-- Review Form Card -->
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <!-- Header -->
+                    <h2 class="card-title text-center mb-4">Add Your Review</h2>
+                    <h5 class="text-muted text-center mb-4">for <strong>{{ booking.bus.name }}</strong></h5>
+
+                    <!-- Form -->
+                    <form method="POST">
+                        {% csrf_token %}
+                        <!-- Rating Input -->
+                        <div class="mb-3">
+                            <label for="rating" class="form-label">Rating (1-5)</label>
+                            <input type="number" name="rating" id="rating" min="1" max="5" required
+                                   class="form-control shadow-sm">
+                        </div>
+
+                        <!-- Comment Input -->
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">Comment</label>
+                            <textarea name="comment" id="comment" rows="4" required
+                                      class="form-control shadow-sm" placeholder="Write your thoughts here..."></textarea>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" 
+                                class="btn btn-primary w-100 shadow-sm">
+                            Submit Review
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -1,15 +1,54 @@
 {% extends 'base.html' %}
+
 {% block title %}Update Booking{% endblock %}
 
 {% block content %}
-<h1>Update Booking</h1>
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Update</button>
-</form>
-{% if error %}
-<p class="text-danger">{{ error }}</p>
-{% endif %}
-<a href="{% url 'bookings:booking_list' %}" class="btn btn-secondary">Back</a>
+{% include 'navbar_customer.html' %}
+
+<div class="container my-5 pt-5" style="height: 90vh;">
+    <!-- Breadcrumb -->
+    <nav class="mb-4">
+        <a href="{% url 'users:homepage' %}" class="text-decoration-none text-secondary">Home</a> /
+        <a href="{% url 'bookings:booking_list' %}" class="text-decoration-none text-secondary">My Bookings</a> /
+        <span class="text-dark">Update Booking</span>
+    </nav>
+
+    <!-- Booking Form Card -->
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <!-- Header -->
+                    <h2 class="card-title text-center mb-4">Update Your Booking</h2>
+                    <h5 class="text-muted text-center mb-4">for <strong>{{ booking.bus.name }}</strong></h5>
+
+                    <!-- Form -->
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="seats" class="form-label">Number of Seats</label>
+                            {{ form.seats }}
+                        </div>
+                    
+                        <label for="services" class="form-label ">Select Additional Services</label>
+                        <div class="mb-3 mx-4">
+                            <div id="services">
+                                {% for checkbox in form.services %}
+                                    <div class="form-check">
+                                        {{ checkbox.tag }}
+                                        <label class="form-check-label" for="{{ checkbox.id_for_label }}">
+                                            {{ checkbox.choice_label }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary w-100 shadow-sm">Update Booking</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

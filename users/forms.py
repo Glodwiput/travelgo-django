@@ -4,6 +4,20 @@ from .models import User, Profile
 from django.core.exceptions import ValidationError
 
 class RegisterForm(UserCreationForm):
+    password1 = forms.CharField(
+        label="Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control form-control-lg',
+            'placeholder': 'Password',
+        })
+    )
+    password2 = forms.CharField(
+        label="Confirm Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control form-control-lg',
+            'placeholder': 'Confirm Password',
+        })
+    )
     phone = forms.CharField(
         max_length=15, 
         required=True, 
@@ -35,14 +49,7 @@ class RegisterForm(UserCreationForm):
                 'class': 'form-control form-control-lg',
                 'placeholder': 'Email',
             }),
-            'password1': forms.PasswordInput(attrs={
-                'class': 'form-control form-control-lg',
-                'placeholder': 'Password',
-            }),
-            'password2': forms.PasswordInput(attrs={
-                'class': 'form-control form-control-lg',
-                'placeholder': 'Confirm Password',
-            }),
+            
         }
 
     def clean_phone(self):
@@ -63,6 +70,20 @@ class RegisterForm(UserCreationForm):
         return user
 
 class UserAddForm(UserCreationForm):
+    password1 = forms.CharField(
+        label="Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control form-control-lg',
+            'placeholder': 'Password',
+        })
+    )
+    password2 = forms.CharField(
+        label="Confirm Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control form-control-lg',
+            'placeholder': 'Confirm Password',
+        })
+    )
     phone = forms.CharField(
         max_length=15, 
         required=True, 
@@ -81,6 +102,7 @@ class UserAddForm(UserCreationForm):
             'rows': 3,
         })
     )
+    
     class Meta:
         model = User
         fields = ['username', 'email', 'password1', 'password2', 'phone', 'address','role']
@@ -93,15 +115,12 @@ class UserAddForm(UserCreationForm):
                 'class': 'form-control form-control-lg',
                 'placeholder': 'Email',
             }),
-            'password1': forms.PasswordInput(attrs={
+            'role': forms.Select(attrs={
                 'class': 'form-control form-control-lg',
-                'placeholder': 'Password',
             }),
-            'password2': forms.PasswordInput(attrs={
-                'class': 'form-control form-control-lg',
-                'placeholder': 'Confirm Password',
-            }),
+            
         }
+
 
     def clean_phone(self):
         phone = self.cleaned_data.get('phone')

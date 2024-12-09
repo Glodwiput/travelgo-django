@@ -1,60 +1,76 @@
 {% extends 'base.html' %}
+{% load humanize %}
 
 {% block content %}
-<div class="container mx-auto py-12 px-6 max-w-7xl">
+{% include 'navbar_customer.html' %}
+
+<div class="container my-5 mt-5 pt-5">
+    <!-- Breadcrumb -->
+    <nav class="mb-4">
+        <a href="{% url 'users:homepage' %}" class="text-decoration-none text-secondary">Home</a> / 
+        <a href="{% url 'bus:bus_list_customer' %}" class="text-decoration-none text-secondary">Bus List</a> / 
+        <span class="text-dark">{{ bus.name }}</span>
+    </nav>
+
     <!-- Bagian Detail Bus -->
-    <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
-        <h1 class="text-3xl font-bold mb-3 text-gray-800">{{ bus.name }}</h1>
-        <div class="space-y-2 text-lg text-gray-600">
-            <p><strong>Departure:</strong> {{ bus.departure }}</p>
-            <p><strong>Destination:</strong> {{ bus.destination }}</p>
-            <p><strong>Departure Time:</strong> {{ bus.departure_time }}</p>
-            <p><strong>Seats Available:</strong> {{ bus.seat }}</p>
-            <p><strong>Price:</strong> ${{ bus.price }}</p>
+    <div class="row">
+        <!-- Gambar Bus -->
+        <div class="col-md-6">
+            <img src="{{ bus.image }}" alt="{{ bus.name }}" class="product-img mb-3">
+            <!-- <div class="d-flex">
+                {% for image in bus.additional_images.all %}
+                    <img src="{{ image.url }}" alt="Thumbnail" class="thumbnail me-2">
+                {% endfor %}
+            </div> -->
         </div>
 
-        <!-- Tombol Kembali ke Halaman List Bus -->
-        <a href="{% url 'bus:bus_list_customer' %}" class="inline-block mt-4 text-blue-600 hover:underline">
-            ← Back to Bus List
-        </a>
+        <!-- Detail Bus -->
+        <div class="col-md-6">
+            <h1 class="h1">{{ bus.name }}</h1>
+            <p class="text-muted">Seats Available: {{ bus.seat }}</p>
+            <h2 class="text-primary">Rp. {{ bus.price|intcomma }}</h2>
+
+            <div class="mb-3">
+                <p><strong>Departure:</strong> {{ bus.departure }}</p>
+                <p><strong>Destination:</strong> {{ bus.destination }}</p>
+                <p><strong>Departure Time:</strong> {{ bus.departure_time }}</p>
+            </div>
+
+            <a href="{% url 'bus:bus_list_customer' %}" class="btn btn-primary btn-lg mt-3">← Back to Bus List</a>
+        </div>
     </div>
 
     <!-- Bagian Formulir Booking -->
-    <div class="bg-white shadow-lg rounded-lg p-6">
-        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Book Your Seat</h2>
-        
-        <!-- Form Booking -->
-        <form method="POST" action="{% url 'bookings:create_booking' bus.id %}" class="space-y-4">
-            {% csrf_token %}
-            <!-- Input Jumlah Kursi -->
-            <!-- <div>
-                <label for="seats" class="block text-sm font-medium text-gray-700">Number of Seats</label>
-                <input type="number" id="seats" name="seats" min="1" max="{{ bus.seat }}"
-                       required
-                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                <p class="text-sm text-gray-500 mt-1">Available seats: {{ bus.seat }}</p>
-            </div> -->
-
-            <!-- Dropdown Pilihan Layanan Tambahan -->
-            <!-- <div>
-                <label for="services" class="block text-sm font-medium text-gray-700">Select Services</label>
-                <select name="services" id="services" multiple
-                        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    {% for service in services %}
-                        <option value="{{ service.id }}">{{ service.name }} - ${{ service.price }}</option>
-                    {% endfor %}
-                </select>
-                <p class="text-sm text-gray-500 mt-1">Select optional services for additional comfort.</p>
-            </div> -->
-            <p class="text-sm text-gray-500 mt-1">Available seats: {{ bus.seat }}</p>
-            {{ form.as_p }}
-
-            <!-- Tombol Kirim -->
-            <button type="submit"
-                    class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                Book Now
-            </button>
-        </form>
+    <div class="card shadow-sm mt-5 ">
+        <div class="card-header bg-info text-white">
+            <h2 class="h5 mb-0">Book Your Seat</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{% url 'bookings:create_booking' bus.id %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="seats" class="form-label">Number of Seats</label>
+                    {{ form.seats }}
+                </div>
+            
+                <label for="services" class="form-label ">Select Additional Services</label>
+                <div class="mb-3 mx-4">
+                    <div id="services">
+                        {% for checkbox in form.services %}
+                            <div class="form-check">
+                                {{ checkbox.tag }}
+                                <label class="form-check-label" for="{{ checkbox.id_for_label }}">
+                                    {{ checkbox.choice_label }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            
+                <button type="submit" class="btn btn-info w-100">Book Now</button>
+            </form>
+            
+        </div>
     </div>
 </div>
 {% endblock %}

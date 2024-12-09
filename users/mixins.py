@@ -13,15 +13,14 @@ class NotLoggedInRequiredMixin:
             elif request.user.groups.filter(name__in=["admin", "staff"]).exists():
                 return redirect('bus:bus_list')
             messages.warning(request, "You are already logged in.")
-            return redirect('users:profile')  # Ganti dengan URL tujuan setelah login
+            return redirect('users:profile')
         
         return super().dispatch(request, *args, **kwargs)
 
 
 
 class RoleRequiredMixin(LoginRequiredMixin):
-    allowed_roles = []  # Override di views
-    
+    allowed_roles = [] 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('users:login')
@@ -35,16 +34,11 @@ from django.shortcuts import redirect
 from django.contrib.auth.mixins import AccessMixin
 
 class CustomLoginRequiredMixin(AccessMixin):
-    """
-    Custom mixin untuk memastikan pengguna telah login.
-    Jika belum login, diarahkan ke halaman 'users:login'.
-    """
     def dispatch(self, request, *args, **kwargs):
-        # Cek apakah pengguna sudah login
+       
         if not request.user.is_authenticated:
-            # Arahkan ke halaman login jika belum login
+            
             return redirect('users:login')
         
-        # Lanjutkan ke proses dispatch jika sudah login
         return super().dispatch(request, *args, **kwargs)
 

@@ -16,6 +16,7 @@
     <link rel="shortcut icon" href="{% static 'assets/images/iconn.png' %}" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"></link>
+    
     <style>
         body {
           font-family: Arial, sans-serif;
@@ -245,7 +246,15 @@
         }
     
     
-    
+        .card-body {
+    overflow: hidden; /* Mencegah overflow */
+}
+.form-control,
+.form-select {
+    max-width: 100%; /* Mencegah elemen melampaui batas */
+    box-sizing: border-box; /* Pastikan padding dihitung dalam width */
+}
+
     </style>
 
     {% block head %}{% endblock head %}
@@ -254,6 +263,7 @@
 <body>
     {% block content %}{% endblock content %}
     {% block script %}{% endblock script %}
+    {% include 'footer.html' %}
 
     <!-- Plugins and Scripts -->
     <script src="{% static 'assets/vendors/js/vendor.bundle.base.js' %}"></script>
