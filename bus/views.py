@@ -11,24 +11,36 @@ from .models import Bus
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from bookings.forms import BookingForm
 from django.db.models import Avg, Count
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from users.mixins import RoleRequiredMixin, NotLoggedInRequiredMixin, CustomLoginRequiredMixin
 
 
-class BusListView(ListView):
+
+
+
+class BusListView(RoleRequiredMixin,ListView):
     model = Bus
     template_name = 'bus/bus_list.html'
+    allowed_roles = ['admin','staff']
+
     def get(self, request, *args, **kwargs):
         buss = self.model.objects.all()
         return render(request, self.template_name, {
             'buss': buss,
             })
 
-class BusDetailView(DetailView):
+class BusDetailView(RoleRequiredMixin,DetailView):
     model = Bus
     template_name = 'bus/bus_detail.html'
+    allowed_roles = ['admin','staff']
 
-class AddBusView(View):
+
+class AddBusView(RoleRequiredMixin, View):
     template_name = 'bus/bus_add.html'
     form_class = BusForm
+    allowed_roles = ['admin','staff']
+
 
     def get(self, request, *args, **kwargs):
         form = self.form_class()
@@ -46,10 +58,12 @@ class AddBusView(View):
         messages.error(request, "There was an error in the adding bus process.")
         return render(request, self.template_name, {'form': form})
 
-class UpdateBusView(UpdateView):
+class UpdateBusView(RoleRequiredMixin, UpdateView):
     model = Bus
     form_class = BusForm
     template_name = 'bus/bus_update.html'
+    allowed_roles = ['admin','staff']
+
 
     def form_valid(self, form):
         messages.success(self.request, "Bus updated successfully!")
@@ -62,9 +76,11 @@ class UpdateBusView(UpdateView):
     def get_success_url(self):
         return reverse_lazy('bus:bus_list')
 
-class DeleteBusView(View):
+class DeleteBusView(RoleRequiredMixin, View):
     template_name = 'bus/bus_list.html'
     model = Bus
+    allowed_roles = ['admin','staff']
+
     def get(self, request, *args, **kwargs):
         buss = self.model.objects.all()
         return render(request, self.template_name, {'buss': buss})
@@ -80,7 +96,7 @@ class DeleteBusView(View):
 # customer
 from django.db.models import Q
 
-class BusListCustomerView(ListView):
+class BusListCustomerView( ListView):
     model = Bus
     template_name = 'bus/bus_customer_list.html'
     context_object_name = 'buses'
@@ -131,7 +147,7 @@ class BusListCustomerView(ListView):
 
         return render(request, self.template_name, context)
 
-class BusDetailCustomerView(DetailView):
+class BusDetailCustomerView(CustomLoginRequiredMixin,DetailView):
     model = Bus
     template_name = 'bus/bus_customer_detail.html'
     context_object_name = 'bus'

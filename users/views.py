@@ -15,6 +15,15 @@ from bookings.models import Booking
 from bus.models import Bus
 from services.models import Service
 from reviews.models import Review
+from .decorators import role_required
+from django.http import Http404
+from .mixins import RoleRequiredMixin, NotLoggedInRequiredMixin, CustomLoginRequiredMixin
+
+
+
+
+
+
 
 
 
@@ -22,7 +31,7 @@ def home_view(request):
     return render(request, 'users/homepage.html')
 
 
-class RegisterView(View):
+class RegisterView(NotLoggedInRequiredMixin,View):
     template_name = 'users/register.html'
     form_class = RegisterForm
 
@@ -51,7 +60,7 @@ class RegisterView(View):
         return render(request, self.template_name, {'form': form})
 
 
-class CustomLoginView(LoginView):
+class CustomLoginView(NotLoggedInRequiredMixin,LoginView):
     template_name = 'users/login.html'
     redirect_authenticated_user = True
 
@@ -71,9 +80,9 @@ class CustomLoginView(LoginView):
         if user.is_superuser or user.groups.filter(name='staff').exists():
             return reverse_lazy('bus:bus_list')
         elif user.groups.filter(name='customer').exists():
-            return reverse_lazy('users:profile')
+            return reverse_lazy('bookings:booking_list')
 
-        return reverse_lazy('users:profile')
+        return reverse_lazy('bookings:booking_list')
 
 
 class CustomLogoutView(LogoutView):
@@ -83,7 +92,7 @@ class CustomLogoutView(LogoutView):
         messages.success(request, "You have been logged out.")
         return super().dispatch(request, *args, **kwargs)
 
-class ProfileView(LoginRequiredMixin, View):
+class ProfileView(CustomLoginRequiredMixin, View):
     template_name = 'users/profile.html'
 
     def get(self, request, *args, **kwargs):
@@ -95,8 +104,7 @@ class ProfileView(LoginRequiredMixin, View):
         return render(request, self.template_name, {'user': request.user, 'profile': profile})
 
 
-
-class EditProfileView(LoginRequiredMixin, View):
+class EditProfileView(CustomLoginRequiredMixin, View):
     template_name = 'users/edit_profile.html'
     user_form_class = EditUserForm
     profile_form_class = EditProfileForm
@@ -118,20 +126,21 @@ class EditProfileView(LoginRequiredMixin, View):
         return render(request, self.template_name, {'user_form': user_form, 'profile_form': profile_form})
 
 
-
-class UserListView(ListView):
+class UserListView(RoleRequiredMixin,ListView):
     model = User
     template_name = 'users/admin/user_list.html'
+    allowed_roles = ['admin']
     def get(self, request, *args, **kwargs):
         users = self.model.objects.all()
         return render(request, self.template_name, {
             'users': users,
             })
 
-
-class UserAddView(View):
+class UserAddView(RoleRequiredMixin,View):
     template_name = 'users/admin/user_add.html'
     form_class = UserAddForm
+    allowed_roles = ['admin']
+
 
     def get(self, request, *args, **kwargs):
         form = self.form_class()
@@ -168,10 +177,11 @@ class UserAddView(View):
         messages.error(request, "There was an error in the add user process.")
         return render(request, self.template_name, {'form': form})
 
-
-class UserDeleteView(View):
+class UserDeleteView(RoleRequiredMixin,View):
     template_name = 'users/admin/user_list.html'
     model = User
+    allowed_roles = ['admin']
+
     def get(self, request, *args, **kwargs):
         users = self.model.objects.all()
         return render(request, self.template_name, {'users': users})
@@ -186,44 +196,45 @@ class UserDeleteView(View):
 
 
 
-
+@login_required
+@role_required(['admin','staff'])
 def reports_view(request):
-    # Filter Options
+    
     bus_id = request.GET.get('bus')
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
 
-    # Base QuerySet
+    
     bookings = Booking.objects.all()
     
-    # Apply Filter by Bus
+    
     if bus_id:
         bookings = bookings.filter(bus_id=bus_id)
 
-    # Filter by Date Range
+   
     if start_date and end_date:
         bookings = bookings.filter(booking_date__range=[start_date, end_date])
 
-    # Filter by Price Range
+    
     if min_price:
         bookings = bookings.filter(price_total__gte=min_price)
     if max_price:
         bookings = bookings.filter(price_total__lte=max_price)
 
-    # Total Revenue & Other Summary
+    
     total_revenue = bookings.aggregate(Sum('price_total'))['price_total__sum'] or 0
     total_bookings = bookings.count()
     most_popular_bus = Bus.objects.annotate(booking_count=Count('booking')).order_by('-booking_count').first()
 
-    # User Report Logic
+   
     user_counts = User.objects.annotate(total_bookings=Count('booking')).order_by('-total_bookings')[:10]  # Top 10 users by number of bookings
 
-    # Review Report Logic
+    
     review_counts = Review.objects.values('user__username').annotate(total_reviews=Count('id')).order_by('-total_reviews')[:10]  # Top 10 users by number of reviews
 
-    # Context for rendering the view
+   
     context = {
         'bookings': bookings,
         'buses': Bus.objects.all(),

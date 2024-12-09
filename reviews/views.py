@@ -1,10 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Review
 from bookings.models import Booking
+from django.contrib.auth.decorators import login_required
 
 from .forms import ReviewForm
 
-
+@login_required
 def ReviewAddView(request, pk):
     booking = get_object_or_404(Booking, id=pk)
     print(booking.reviews.all()) 

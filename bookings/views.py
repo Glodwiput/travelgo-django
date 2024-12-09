@@ -4,8 +4,11 @@ from .forms import BookingForm
 from .models import Booking
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from users.mixins import RoleRequiredMixin, NotLoggedInRequiredMixin, CustomLoginRequiredMixin
 
-class BookingListView(ListView):
+
+class BookingListView(CustomLoginRequiredMixin,ListView):
     model = Booking
     template_name = 'bookings/booking_list.html'
 
@@ -16,7 +19,7 @@ class BookingListView(ListView):
 
 
 
-
+@login_required
 def create_booking(request, pk):
     bus = Bus.objects.get(id=pk)
     
@@ -64,7 +67,7 @@ def create_booking(request, pk):
     return render(request, 'bus/bus_customer_list.html', {'form': form, 'bus':bus})
 
 
-
+@login_required
 def update_booking(request, pk):
     booking = get_object_or_404(Booking, pk=pk)
 
@@ -98,7 +101,7 @@ def update_booking(request, pk):
     
     return render(request, 'bookings/update_booking.html', {'form': form, 'booking': booking})
 
-
+@login_required
 def delete_booking(request, pk):
     booking = get_object_or_404(Booking, pk=pk)
 
